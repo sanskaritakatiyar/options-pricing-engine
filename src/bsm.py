@@ -37,6 +37,14 @@ def rho(S, K, T, r, sigma, option_type='call'):
         return round(K * T * np.exp(-r*T) * norm.cdf(d2) / 100, 4)
     return round(-K * T * np.exp(-r*T) * norm.cdf(-d2) / 100, 4)
 
+def implied_vol(market_price, S, K, T, r):
+    sigma = 0.3
+    for _ in range(100):
+        price = bsm_price(S, K, T, r, sigma)
+        diff = (market_price - price) / vega(S, K, T, r, sigma)
+        sigma = sigma + diff
+    return round(sigma, 4)
+
 if __name__ == "__main__":
     S, K, T, r, sigma = 22000, 22000, 0.083, 0.065, 0.18
     print(f"Call price : {bsm_price(S, K, T, r, sigma)}")
@@ -45,3 +53,5 @@ if __name__ == "__main__":
     print(f"Vega       : {vega(S, K, T, r, sigma)}")
     print(f"Theta      : {theta(S, K, T, r, sigma)}")
     print(f"Rho        : {rho(S, K, T, r, sigma)}")
+    iv = implied_vol(600, 22000, 22000, 0.083, 0.065)
+    print(f"Implied vol    : {iv}")
