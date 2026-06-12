@@ -41,8 +41,12 @@ def implied_vol(market_price, S, K, T, r):
     sigma = 0.3
     for _ in range(100):
         price = bsm_price(S, K, T, r, sigma)
-        diff = (market_price - price) / vega(S, K, T, r, sigma)
-        sigma = sigma + diff
+        diff = market_price - price
+        if abs(diff) < 0.0001:
+            break
+        v = vega(S, K, T, r, sigma)
+        sigma = sigma + diff / (v * 100)  # vega is scaled by /100 in your function
+        sigma = max(sigma, 0.001)  # never let sigma go to zero or negative
     return round(sigma, 4)
 
 if __name__ == "__main__":
