@@ -8,13 +8,16 @@ from bsm import bsm_price, implied_vol
 ticker = yf.Ticker("AAPL")
 S = ticker.history(period='1d')['Close'].iloc[-1]
 
-expiry = "2026-06-19"
+expiry = "2026-07-17"
 chain = ticker.option_chain(expiry)
 calls = chain.calls
 
 today = datetime.now()
 expiry_date = datetime.strptime(expiry, "%Y-%m-%d")
 T = (expiry_date - today).days / 365
+if T < 0.02:  # less than about 1 week
+    print("Time to expiry too short for stable implied vol calculation.")
+    print("Choose a later expiry date instead.\n")
 
 r = 0.045  # approx US risk-free rate
 
@@ -23,7 +26,9 @@ print(f"Time to expiry: {T:.4f} years\n")
 
 print(f"{'Strike':>8} {'Market Price':>14} {'Implied Vol':>12} {'Model Price':>12}")
 
-for _, row in calls.head(10).iterrows():
+calls_near_money = calls[(calls['strike'] > S * 0.95) & (calls['strike'] < S * 1.05)]
+
+for _, row in calls_near_money.iterrows():
     K = row['strike']
     market_price = row['lastPrice']
     
